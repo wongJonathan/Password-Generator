@@ -1,20 +1,19 @@
 use std::fmt;
-use std::error::Error;
-use rand::{thread_rng, Rng};
-use rand::distributions::Alphanumeric;
 
 
-pub struct Config {
+pub struct Config<'a> {
     pub length: usize,
     pub amount: Option<usize>,
+    pub file: Option<Vec<&'a str>>,
 }
 
-impl Config {
+impl Config<'_> {
     pub fn new(raw_args: &[String]) -> Result<Config, &'static str> {
         let args = &raw_args[1..];
 
         let mut length: usize = 0;
         let mut amount: Option<usize> = None;
+        let mut file: Option<Vec<&str>> = None;
 
         if args.len() < 1 {
             return Err("Not enough args");
@@ -34,6 +33,7 @@ impl Config {
                             },
                         _ => return Err("Missing value for amount")
                     },
+                "-f" | "--file" => file = Some(vec!["test", "a", "b"]),
                 command_arg => 
                     length = match command_arg.parse::<usize>() {
                         Ok(x) => x,
@@ -42,40 +42,15 @@ impl Config {
             }
         }
 
-        return Ok(Config { length, amount });
+        return Ok(Config { length, amount, file });
     }
 }
 
-impl fmt::Debug for Config {
+impl fmt::Debug for Config<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Config")
         .field("length", &self.length)
         .field("ammount", &self.amount)
         .finish()
     }
-}
-
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let mut passwords: Vec<String> = vec![];
-
-    match config.amount {
-        Some(amount) => 
-            for _ in 0..amount {
-                passwords.push(generate_password(config.length));
-            },
-        None => passwords.push(generate_password(config.length))
-    }
-
-    for password in passwords {
-        println!("{}", password);
-    }
-
-    Ok(())
-}
-
-pub fn generate_password(length: usize) -> String {
-    thread_rng()
-    .sample_iter(&Alphanumeric)
-    .take(length)
-    .collect()
 }

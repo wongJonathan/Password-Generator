@@ -1,8 +1,10 @@
 use std::env;
 use std::process;
 
-use password_generator::Config;
-use password_generator::run;
+mod config;
+mod main_loop;
+
+use crate::config::Config;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -14,5 +16,5 @@ fn main() {
         process::exit(1);
     });
     println!("{:?}", config);
-    run(config).expect("Error creating password");
+    main_loop::run(config).expect("Error creating password");
 }
